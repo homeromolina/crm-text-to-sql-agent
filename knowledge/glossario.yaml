@@ -1,0 +1,17 @@
+# Regras de negócio que o modelo não tem como adivinhar.
+- termo: cliente ativo
+  regra: "cliente com pelo menos um pedido com status 'pago' nos últimos 90 dias, ou seja, orders.created_at >= date('now', '-90 days')."
+- termo: compra / pedido válido
+  regra: "só contam pedidos com status 'pago'. Pedidos 'cancelado' e 'pendente' ficam de fora de faturamento e contagem de compras."
+- termo: faturamento / receita
+  regra: "soma de orders.amount dos pedidos com status 'pago'."
+- termo: ticket médio
+  regra: "faturamento dividido pelo número de pedidos pagos, AVG(orders.amount) com status 'pago'."
+- termo: cliente recorrente
+  regra: cliente com mais de 2 pedidos pagos no período perguntado.
+- termo: cliente inativo / churn
+  regra: cliente que já comprou, mas não tem pedido pago nos últimos 90 dias.
+- termo: promotor / detrator (NPS)
+  regra: promotor tem nps >= 9, detrator tem nps <= 6, neutro tem 7 ou 8. NPS = % promotores - % detratores.
+- termo: mês atual / este mês
+  regra: "strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')."

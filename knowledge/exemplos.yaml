@@ -1,0 +1,26 @@
+# Pares pergunta -> SQL validados pelo time de dados (few-shot recuperado por similaridade).
+- pergunta: Quantos clientes temos em Barcelona?
+  sql: SELECT COUNT(*) AS clientes FROM customers WHERE city = 'Barcelona';
+- pergunta: Qual foi o faturamento por categoria de produto no último ano?
+  sql: |
+    SELECT p.category, ROUND(SUM(o.amount), 2) AS faturamento
+    FROM orders o JOIN products p ON p.id = o.product_id
+    WHERE o.status = 'pago' AND o.created_at >= date('now', '-365 days')
+    GROUP BY p.category ORDER BY faturamento DESC;
+- pergunta: Quantos clientes ativos temos por segmento?
+  sql: |
+    SELECT c.segment, COUNT(DISTINCT c.id) AS clientes_ativos
+    FROM customers c JOIN orders o ON o.customer_id = c.id
+    WHERE o.status = 'pago' AND o.created_at >= date('now', '-90 days')
+    GROUP BY c.segment;
+- pergunta: Quais são os 5 clientes que mais gastaram?
+  sql: |
+    SELECT c.id, c.name, ROUND(SUM(o.amount), 2) AS total
+    FROM customers c JOIN orders o ON o.customer_id = c.id
+    WHERE o.status = 'pago'
+    GROUP BY c.id, c.name ORDER BY total DESC LIMIT 5;
+- pergunta: Qual o NPS médio por canal de atendimento?
+  sql: |
+    SELECT channel, ROUND(AVG(nps), 1) AS nps_medio
+    FROM interactions WHERE nps IS NOT NULL
+    GROUP BY channel ORDER BY nps_medio DESC;

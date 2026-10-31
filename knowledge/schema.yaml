@@ -1,0 +1,36 @@
+# Descrição das tabelas, em linguagem de negócio. O RAG indexa um documento por tabela.
+customers:
+  descricao: Clientes do CRM, um por linha.
+  colunas:
+    id: identificador do cliente
+    name: nome completo (dado pessoal)
+    email: e-mail (dado pessoal, mascarado na saída)
+    phone: telefone (dado pessoal, mascarado na saída)
+    city: "cidade do cliente, ex. 'Madrid', 'Barcelona'"
+    segment: "segmento comercial, 'varejo', 'pme' ou 'enterprise'"
+    created_at: data de cadastro (YYYY-MM-DD)
+products:
+  descricao: Catálogo de produtos e serviços vendidos.
+  colunas:
+    id: identificador do produto
+    name: "nome do produto, ex. 'Plano Pro'"
+    category: "categoria, 'software', 'servicos' ou 'hardware'"
+    price: preço unitário em euros
+orders:
+  descricao: Pedidos (compras) feitos pelos clientes.
+  colunas:
+    id: identificador do pedido
+    customer_id: cliente que comprou (customers.id)
+    product_id: produto comprado (products.id)
+    quantity: quantidade
+    amount: valor total do pedido em euros
+    status: "'pago', 'pendente' ou 'cancelado'"
+    created_at: data do pedido (YYYY-MM-DD)
+interactions:
+  descricao: Contatos do time com o cliente (atendimento, vendas) e nota NPS quando houve pesquisa.
+  colunas:
+    id: identificador da interação
+    customer_id: cliente (customers.id)
+    channel: "canal, 'email', 'telefone', 'whatsapp' ou 'reuniao'"
+    nps: nota NPS de 0 a 10, ou NULL se não respondeu
+    created_at: data da interação (YYYY-MM-DD)

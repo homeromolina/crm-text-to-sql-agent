@@ -1,0 +1,48 @@
+# Perguntas reais do time com o SQL de referência validado por um analista.
+# Erros que aparecerem em produção devem virar novos itens aqui.
+- pergunta: Quantos clientes de Madrid compraram mais de 2 vezes nos últimos 90 dias?
+  sql: |
+    SELECT COUNT(*) FROM (
+      SELECT o.customer_id FROM orders o JOIN customers c ON c.id = o.customer_id
+      WHERE c.city = 'Madrid' AND o.status = 'pago' AND o.created_at >= date('now', '-90 days')
+      GROUP BY o.customer_id HAVING COUNT(*) > 2) t;
+- pergunta: Quantos clientes ativos temos?
+  sql: |
+    SELECT COUNT(DISTINCT customer_id) FROM orders
+    WHERE status = 'pago' AND created_at >= date('now', '-90 days');
+- pergunta: Qual o faturamento total dos últimos 30 dias?
+  sql: |
+    SELECT ROUND(SUM(amount), 2) FROM orders
+    WHERE status = 'pago' AND created_at >= date('now', '-30 days');
+- pergunta: Quantos clientes existem em cada cidade?
+  sql: SELECT city, COUNT(*) FROM customers GROUP BY city;
+- pergunta: Qual o ticket médio por segmento?
+  sql: |
+    SELECT c.segment, ROUND(AVG(o.amount), 2) FROM orders o JOIN customers c ON c.id = o.customer_id
+    WHERE o.status = 'pago' GROUP BY c.segment;
+- pergunta: Quantos pedidos foram cancelados?
+  sql: SELECT COUNT(*) FROM orders WHERE status = 'cancelado';
+- pergunta: Qual produto mais vendeu em quantidade?
+  sql: |
+    SELECT p.name FROM orders o JOIN products p ON p.id = o.product_id
+    WHERE o.status = 'pago' GROUP BY p.id, p.name ORDER BY SUM(o.quantity) DESC LIMIT 1;
+- pergunta: Quantos clientes nunca fizeram uma compra paga?
+  sql: |
+    SELECT COUNT(*) FROM customers
+    WHERE id NOT IN (SELECT customer_id FROM orders WHERE status = 'pago');
+- pergunta: Quantos detratores temos no NPS?
+  sql: SELECT COUNT(*) FROM interactions WHERE nps <= 6;
+- pergunta: Qual a receita de software em Barcelona?
+  sql: |
+    SELECT ROUND(SUM(o.amount), 2) FROM orders o
+    JOIN customers c ON c.id = o.customer_id JOIN products p ON p.id = o.product_id
+    WHERE o.status = 'pago' AND c.city = 'Barcelona' AND p.category = 'software';
+- pergunta: Quantos clientes enterprise ficaram inativos?
+  sql: |
+    SELECT COUNT(*) FROM customers c
+    WHERE c.segment = 'enterprise'
+      AND EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'pago')
+      AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'pago'
+                      AND o.created_at >= date('now', '-90 days'));
+- pergunta: Qual canal de atendimento tem mais interações?
+  sql: SELECT channel FROM interactions GROUP BY channel ORDER BY COUNT(*) DESC LIMIT 1;

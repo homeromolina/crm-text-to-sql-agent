@@ -1,0 +1,10 @@
+langchain>=1.4
+langchain-core>=1.7
+langgraph>=1.2
+langchain-anthropic>=1.7   # troque pelo pacote do seu provedor (langchain-openai, langchain-ollama...)
+langfuse>=5.1
+sqlglot>=30
+pyyaml>=6
+numpy>=1.26
+python-dotenv>=1
+pytest>=9
