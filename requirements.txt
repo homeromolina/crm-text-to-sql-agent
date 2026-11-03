@@ -1,7 +1,7 @@
 langchain>=1.4
 langchain-core>=1.7
 langgraph>=1.2
-langchain-anthropic>=1.7   # troque pelo pacote do seu provedor (langchain-openai, langchain-ollama...)
+langchain-ollama>=1.1     # modelo local e aberto (padrão). Para outro provedor: langchain-anthropic, langchain-openai...
 langfuse>=5.1
 sqlglot>=30
 pyyaml>=6

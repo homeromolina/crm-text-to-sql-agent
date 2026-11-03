@@ -21,18 +21,35 @@ START → buscar_contexto → gerar_sql → validar → [aprovar] → executar �
 | Grafo do LangGraph com loop de correção | [`app/graph.py`](app/graph.py) |
 | Humano no loop e checkpoints | `--aprovar` no CLI (`interrupt` + `InMemorySaver`) |
 | Guardrails: só leitura, bloqueio de DELETE/UPDATE, limite de linhas e tempo, máscara de dados pessoais | [`app/guardrails.py`](app/guardrails.py), [`app/db.py`](app/db.py) |
-| Observabilidade com Langfuse | [`app/observability.py`](app/observability.py) |
+| Observabilidade com Langfuse (self-hosted) | [`app/observability.py`](app/observability.py), [`docker-compose.yml`](docker-compose.yml) |
 | Métricas: execution accuracy, SQL válido, recall de tabelas, p95 | [`eval/run_eval.py`](eval/run_eval.py), [`eval/dataset.yaml`](eval/dataset.yaml) |
+
+## 100% open source
+
+Por padrão tudo roda na sua máquina, sem conta e sem chave de API:
+
+| Peça | O que usa | Licença |
+|---|---|---|
+| Modelo | `qwen2.5:7b` no [Ollama](https://ollama.com) | Apache-2.0 |
+| Orquestração | LangChain + LangGraph | MIT |
+| Observabilidade | [Langfuse](https://langfuse.com) self-hosted (`docker-compose.yml`) | MIT |
+| Embeddings | locais (hashing), ou `ollama:nomic-embed-text` | — / Apache-2.0 |
+| Banco | SQLite | domínio público |
+
+Por que Langfuse e não LangSmith: o LangSmith é uma plataforma fechada (só o SDK é aberto) e rodar ele no seu servidor exige o plano Enterprise. O Langfuse é MIT e sobe com um `docker compose`.
 
 ## Como rodar
 
-Precisa de Python 3.11+.
+Precisa de Python 3.11+, [Ollama](https://ollama.com) e Docker.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # coloque sua chave do provedor do modelo
+cp .env.example .env          # já vem configurado pro modo local
 python data/seed.py           # cria data/crm.db com dados fictícios
+
+ollama pull qwen2.5:7b        # o modelo (uns 4,7 GB)
+docker compose up -d          # Langfuse em http://localhost:3000 (login e chaves no .env)
 ```
 
 Perguntar:
@@ -59,14 +76,17 @@ pytest
 Tudo passa por `init_chat_model`, então trocar é uma linha no `.env`:
 
 ```bash
-LLM_MODEL=anthropic:claude-sonnet-5-5   # pip install langchain-anthropic
-LLM_MODEL=openai:gpt-5                  # pip install langchain-openai
-LLM_MODEL=ollama:qwen3                  # pip install langchain-ollama (local)
+LLM_MODEL=ollama:qwen2.5:7b             # padrão, local e aberto
+LLM_MODEL=ollama:qwen3                  # outro modelo aberto do Ollama
+LLM_MODEL=anthropic:claude-sonnet-5-5   # API fechada: pip install langchain-anthropic
+LLM_MODEL=openai:gpt-5                  # API fechada: pip install langchain-openai
 ```
 
 ## Langfuse
 
-Crie um projeto no [Langfuse](https://langfuse.com) (cloud ou self-hosted) e preencha `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` e `LANGFUSE_BASE_URL` no `.env`. A partir daí cada pergunta vira um trace com cada nó do grafo, os prompts, o tempo e os tokens, e o `eval` grava as notas `execution_accuracy`, `sql_valido` e `recall_tabelas` em cada trace. Sem as chaves, tudo funciona igual, só sem os traces.
+O `docker compose up -d` sobe o Langfuse local (web, worker, Postgres, ClickHouse, Redis e MinIO) e já cria a organização, o projeto e as chaves do `.env`. Entre em http://localhost:3000 com o e-mail e a senha de `LANGFUSE_INIT_USER_*`. A partir daí cada pergunta vira um trace com cada nó do grafo, os prompts, o tempo e os tokens, e o `eval` grava as notas `execution_accuracy`, `sql_valido` e `recall_tabelas` em cada trace. Sem as chaves, tudo funciona igual, só sem os traces.
+
+As senhas do `.env.example` e do `docker-compose.yml` são para uso local. Se for expor o Langfuse fora da sua máquina, troque todas as marcadas com `CHANGEME`. Para desligar: `docker compose down` (os dados ficam nos volumes).
 
 ## Adaptar pro seu banco
 

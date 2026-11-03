@@ -10,8 +10,8 @@ load_dotenv(RAIZ / ".env")
 DB_PATH = Path(os.getenv("CRM_DB_PATH", RAIZ / "data" / "crm.db"))
 KNOWLEDGE_DIR = RAIZ / "knowledge"
 
-# Qualquer provedor suportado pelo init_chat_model: "anthropic:...", "openai:...", "ollama:..."
-LLM_MODEL = os.getenv("LLM_MODEL", "anthropic:claude-sonnet-5-5")
+# Padrão: modelo aberto rodando local no Ollama. Qualquer provedor do init_chat_model funciona ("anthropic:...", "openai:...").
+LLM_MODEL = os.getenv("LLM_MODEL", "ollama:qwen2.5:7b")
 # Vazio = embeddings locais (sem API). Ex.: "openai:text-embedding-3-small"
 EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL", "")
 
